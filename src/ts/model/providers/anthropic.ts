@@ -1,6 +1,45 @@
 import { LLMFlags, LLMFormat, LLMProvider, LLMTokenizer, ClaudeParameters, type LLMModel } from '../types'
 
 export const AnthropicModels: LLMModel[] = [
+
+    // Claude 4.6 (No Date)
+    {
+        name: "Claude 4.6 Opus",
+        id: 'claude-opus-4-6',
+        shortName: "4.6 Opus",
+        provider: LLMProvider.Anthropic,
+        format: LLMFormat.Anthropic,
+        flags: [
+            LLMFlags.hasImageInput,
+            LLMFlags.hasFirstSystemPrompt,
+            LLMFlags.hasStreaming,
+            LLMFlags.claudeThinking,
+            LLMFlags.claudeAdaptiveThinking
+        ],
+        parameters: [...ClaudeParameters, 'thinking_tokens'],
+        tokenizer: LLMTokenizer.Claude,
+        recommended: true
+    },
+
+    // Claude 4.6 (No Date)
+    {
+        name: "Claude 4.6 Sonnet",
+        id: 'claude-sonnet-4-6',
+        shortName: "4.6 Sonnet",
+        provider: LLMProvider.Anthropic,
+        format: LLMFormat.Anthropic,
+        flags: [
+            LLMFlags.hasImageInput,
+            LLMFlags.hasFirstSystemPrompt,
+            LLMFlags.hasStreaming,
+            LLMFlags.claudeThinking,
+            LLMFlags.claudeAdaptiveThinking
+        ],
+        parameters: [...ClaudeParameters, 'thinking_tokens'],
+        tokenizer: LLMTokenizer.Claude,
+        recommended: true
+    },
+
     // Claude 4.5 (2025-11-01)
     {
         name: "Claude 4.5 Opus (20251101)",
@@ -15,7 +54,6 @@ export const AnthropicModels: LLMModel[] = [
             LLMFlags.hasStreaming,
             LLMFlags.claudeThinking
         ],
-        recommended: true,
         parameters: [...ClaudeParameters, 'thinking_tokens'],
         tokenizer: LLMTokenizer.Claude
     },
@@ -34,7 +72,6 @@ export const AnthropicModels: LLMModel[] = [
             LLMFlags.hasStreaming,
             LLMFlags.claudeThinking
         ],
-        recommended: true,
         parameters: [...ClaudeParameters, 'thinking_tokens'],
         tokenizer: LLMTokenizer.Claude
     },

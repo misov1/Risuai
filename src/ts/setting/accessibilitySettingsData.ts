@@ -60,6 +60,20 @@ export const accessibilitySettingsItems: SettingItem[] = [
         keywords: ['click', 'edit', 'message']
     },
     {
+        id: 'acc.enableBlockPartialEdit',
+        type: 'check',
+        labelKey: 'enableBlockPartialEdit',
+        bindKey: 'enableBlockPartialEdit',
+        keywords: ['partial', 'edit', 'block', 'hover']
+    },
+    {
+        id: 'acc.enableDragPartialEdit',
+        type: 'check',
+        labelKey: 'enableDragPartialEdit',
+        bindKey: 'enableDragPartialEdit',
+        keywords: ['partial', 'edit', 'drag', 'selection']
+    },
+    {
         id: 'acc.botSettingAtStart',
         type: 'check',
         labelKey: 'botSettingAtStart',
@@ -167,5 +181,12 @@ export const accessibilitySettingsItems: SettingItem[] = [
         labelKey: 'createFolderOnBranch',
         bindKey: 'createFolderOnBranch',
         keywords: ['create', 'folder', 'branch'],
+    },
+    {
+        id: 'acc.hamburgerButtonBottom',
+        type: 'check',
+        labelKey: 'hamburgerButtonBottom',
+        bindKey: 'hamburgerButtonBottom',
+        keywords: ['hamburger', 'button', 'bottom', 'menu', 'sidebar', 'accessibility'],
     }
 ];

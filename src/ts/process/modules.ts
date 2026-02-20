@@ -5,8 +5,8 @@ import { AppendableBuffer, downloadFile, forageStorage, readImage, saveAsset } f
 import { selectSingleFile, sleep } from "../util"
 import { v4 } from "uuid"
 import { convertExternalLorebook } from "./lorebook.svelte"
+import { compressImage } from '../media'
 import { decodeRPack, encodeRPack } from "../rpack/rpack_js"
-import { convertImage } from "../parser.svelte"
 import { HideIconStore, moduleBackgroundEmbedding, ReloadGUIPointer } from "../stores.svelte"
 import {get} from "svelte/store"
 
@@ -78,7 +78,7 @@ export async function exportModule(module:RisuModule, arg:{
         if(!rData){
             rData = new Uint8Array(0) //blank buffer
         }
-        let encoded = await encodeRPack(Buffer.from(await convertImage(rData)))
+        let encoded = await encodeRPack(Buffer.from(await compressImage(rData)))
         writeLength(encoded.length)
         apb.append(encoded)
     }
@@ -239,11 +239,11 @@ export async function importModule(){
             const module = await readModule(buf)
             db.modules.push(module)
             setDatabase(db)
-            return   
         } catch (error) {
             console.error(error)
             alertError(language.errors.noData)
         }
+        return
     }
     try {
         const importData = JSON.parse(Buffer.from(fileData).toString())
@@ -267,7 +267,9 @@ export async function importModule(){
             setDatabase(db)
             return
         }
-        if(importData.type === 'risu' && importData.data){
+        // importData.type === 'risu' in conflict with HypaV3 preset exports
+        // difference: record vs. array
+        if(importData.type === 'risu' && importData.data && Array.isArray(importData.data)){
             const lores:loreBook[] = importData.data
             const importModule = {
                 name: importData.name || 'Imported Lorebook',
@@ -304,8 +306,10 @@ export async function importModule(){
             return
         }
     } catch (error) {
-        alertNormal(language.errors.noData)
+        console.error(error)
     }
+
+    alertNormal(language.errors.noData)
 }
 
 function getModuleById(id:string){

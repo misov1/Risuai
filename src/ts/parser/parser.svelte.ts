@@ -1,24 +1,24 @@
 import DOMPurify from 'dompurify';
 import markdownit from 'markdown-it'
-import { appVer, getCurrentCharacter, getDatabase, type Database, type character, type customscript, type groupChat, type triggerscript } from './storage/database.svelte';
-import { DBState, selIdState } from './stores.svelte';
-import { aiWatermarkingLawApplies, getFileSrc } from './globalApi.svelte';
+import { appVer, getCurrentCharacter, getDatabase, type Database, type character, type customscript, type groupChat, type triggerscript } from '../storage/database.svelte';
+import { DBState, selIdState } from '../stores.svelte';
+import { aiWatermarkingLawApplies, getFileSrc } from '../globalApi.svelte';
 import { isTauri, isNodeServer } from "src/ts/platform"
-import { getChatVar, setChatVar, getGlobalChatVar } from './parser/chatVar.svelte';
-import { processScriptFull } from './process/scripts';
+import { getChatVar, setChatVar, getGlobalChatVar } from './chatVar.svelte';
+import { processScriptFull } from '../process/scripts';
 import { get } from 'svelte/store';
 import css, { type CssAtRuleAST } from '@adobe/css-tools'
-import { selectedCharID } from './stores.svelte';
-import { calcString } from './process/infunctions';
-import { findCharacterbyId, getPersonaPrompt, getUserIcon, getUserName, pickHashRand, replaceAsync} from './util';
-import { getInlayAssetBlob } from './process/files/inlays';
-import { getModuleAssets, getModuleLorebooks, getModules } from './process/modules';
+import { selectedCharID } from '../stores.svelte';
+import { calcString } from '../process/infunctions';
+import { findCharacterbyId, getPersonaPrompt, getUserIcon, getUserName, pickHashRand, replaceAsync} from '../util';
+import { getInlayAssetBlob } from '../process/files/inlays';
+import { getModuleAssets, getModuleLorebooks, getModules } from '../process/modules';
 import hljs from 'highlight.js/lib/core'
 import 'highlight.js/styles/atom-one-dark.min.css'
 import { language } from 'src/lang';
 import katex from 'katex'
-import { getModelInfo } from './model/modellist';
-import { registerCBS, type matcherArg, type RegisterCallback } from './cbs';
+import { getModelInfo } from '../model/modellist';
+import { registerCBS, type matcherArg, type RegisterCallback } from '../cbs';
 import cssSelectorParser from 'postcss-selector-parser'
 
 const markdownItOptions = {
@@ -181,6 +181,19 @@ function renderMarkdown(md:markdownit, data:string){
     if(DBState.db?.unformatQuotes){
         text = text.replace(/\uE9b0/gu, quotes[0]).replace(/\uE9b1/gu, quotes[1])
         text = text.replace(/\uE9b2/gu, quotes[2]).replace(/\uE9b3/gu, quotes[3])
+    }
+    else if(DBState.db?.blockquoteStyling){
+        text = text.replace(/\uE9b0(.+?)\uE9b1/gum, (full, content) => {
+            content = content.replace(/\uE9b2/gu, '<mark risu-mark="quote1">' + quotes[2]).replace(/\uE9b3/gu, quotes[3] + '</mark>')
+            return `<br><br><mark risu-mark="blockquote2">${quotes[0]}${content}${quotes[1]}</mark><br><br>`
+        }).replace(/\uE9b2(.+?)\uE9b3/gum, (full, content) => {
+            return `<br><br><mark risu-mark="blockquote1">${quotes[2]}${content}${quotes[3]}</mark><br><br>`
+        })
+
+        //clean up any unmatched quote marks
+        text = text.replace(/\uE9b0/gu,  quotes[0]).replace(/\uE9b1/gu, quotes[1])
+        text = text.replace(/\uE9b2/gu, quotes[2]).replace(/\uE9b3/gu, quotes[3])
+        
     }
     else{
         text = text.replace(/\uE9b0/gu, '<mark risu-mark="quote2">' + quotes[0]).replace(/\uE9b1/gu, quotes[1] + '</mark>')
@@ -929,84 +942,6 @@ function decodeStyle(text:string){
 
 export async function hasher(data:Uint8Array){
     return Buffer.from(await crypto.subtle.digest("SHA-256", data as any)).toString('hex');
-}
-
-export async function convertImage(data:Uint8Array) {
-    if(!DBState.db.imageCompression){
-        return data
-    }
-    const type = checkImageType(data)
-    if(type !== 'Unknown' && type !== 'WEBP' && type !== 'AVIF'){
-        return await resizeAndConvert(data)
-    }
-    return data
-}
-
-async function resizeAndConvert(imageData: Uint8Array): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-        const base64Image = 'data:image/png;base64,' + Buffer.from(imageData).toString('base64');
-        const image = new Image();
-        image.onload = () => {
-            URL.revokeObjectURL(base64Image);
-
-            // Create a canvas
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-            if (!context) {
-                throw new Error('Unable to get 2D context');
-            }
-
-            // Compute the new dimensions while maintaining aspect ratio
-            let { width, height } = image;
-            if (width > 3000 || height > 3000) {
-                const aspectRatio = width / height;
-                if (width > height) {
-                    width = 3000;
-                    height = Math.round(width / aspectRatio);
-                } else {
-                    height = 3000;
-                    width = Math.round(height * aspectRatio);
-                }
-            }
-
-            // Resize and draw the image to the canvas
-            canvas.width = width;
-            canvas.height = height;
-            context.drawImage(image, 0, 0, width, height);
-
-            // Try to convert to WebP
-            let base64 = canvas.toDataURL('image/webp', 75);
-
-            // If WebP is not supported, convert to JPEG
-            if (base64.indexOf('data:image/webp') != 0) {
-                base64 = canvas.toDataURL('image/jpeg', 75);
-            }
-
-            // Convert it to Uint8Array
-            const array = Buffer.from(base64.split(',')[1], 'base64');
-            resolve(array);
-        };
-        image.src = base64Image;
-    });
-}
-
-type ImageType = 'JPEG' | 'PNG' | 'GIF' | 'BMP' | 'AVIF' | 'WEBP' | 'Unknown';
-
-export function checkImageType(arr:Uint8Array):ImageType {
-    const isJPEG = arr[0] === 0xFF && arr[1] === 0xD8 && arr[arr.length-2] === 0xFF && arr[arr.length-1] === 0xD9;
-    const isPNG = arr[0] === 0x89 && arr[1] === 0x50 && arr[2] === 0x4E && arr[3] === 0x47 && arr[4] === 0x0D && arr[5] === 0x0A && arr[6] === 0x1A && arr[7] === 0x0A;
-    const isGIF = arr[0] === 0x47 && arr[1] === 0x49 && arr[2] === 0x46 && arr[3] === 0x38 && (arr[4] === 0x37 || arr[4] === 0x39) && arr[5] === 0x61;
-    const isBMP = arr[0] === 0x42 && arr[1] === 0x4D;
-    const isAVIF = arr[4] === 0x66 && arr[5] === 0x74 && arr[6] === 0x79 && arr[7] === 0x70 && arr[8] === 0x61 && arr[9] === 0x76 && arr[10] === 0x69 && arr[11] === 0x66;
-    const isWEBP = arr[0] === 0x52 && arr[1] === 0x49 && arr[2] === 0x46 && arr[3] === 0x46 && arr[8] === 0x57 && arr[9] === 0x45 && arr[10] === 0x42 && arr[11] === 0x50;
-
-    if (isJPEG) return "JPEG";
-    if (isPNG) return "PNG";
-    if (isGIF) return "GIF";
-    if (isBMP) return "BMP";
-    if (isAVIF) return "AVIF";
-    if (isWEBP) return "WEBP";
-    return "Unknown";
 }
 
 export type CbsConditions = {
