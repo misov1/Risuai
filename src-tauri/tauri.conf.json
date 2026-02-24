@@ -17,27 +17,28 @@
     "resources": [
       "src-python/*"
     ],
-    "targets": ["deb", "rpm", "appimage", "nsis", "app", "dmg"],
+    "targets": [
+      "deb",
+      "rpm",
+      "appimage",
+      "nsis",
+      "app",
+      "dmg"
+    ],
     "createUpdaterArtifacts": true,
     "fileAssociations": [
       {
         "ext": [
-          "risum", "risup", "charx"
+          "risum",
+          "risup",
+          "charx"
         ]
       }
     ]
   },
   "productName": "RisuAI",
   "mainBinaryName": "RisuAI",
-<<<<<<< HEAD
-<<<<<<< HEAD
-  "version": "2026.1.184",
-=======
-  "version": "2026.2.200",
->>>>>>> 4300e63f (chore: update version to 2026.2.200 across configuration files)
-=======
-  "version": "2026.2.200",
->>>>>>> 4300e63fe5b5eeda95aec53f83edee3a7848b064
+  "version": "2026.2.240",
   "identifier": "co.aiclient.risu",
   "plugins": {
     "updater": {
@@ -51,7 +52,9 @@
     },
     "deep-link": {
       "desktop": {
-        "schemes": ["risuailocal"]
+        "schemes": [
+          "risuailocal"
+        ]
       }
     }
   },

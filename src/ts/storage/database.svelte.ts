@@ -15,15 +15,7 @@ import { type HypaV3Settings, type HypaV3Preset, createHypaV3Preset } from '../p
 import { isTauri, isNodeServer } from "src/ts/platform"
 
 //APP_VERSION_POINT is to locate the app version in the database file for version bumping
-<<<<<<< HEAD
-<<<<<<< HEAD
-export let appVer = "2026.1.184" //<APP_VERSION_POINT>
-=======
-export let appVer = "2026.2.200" //<APP_VERSION_POINT>
->>>>>>> 4300e63f (chore: update version to 2026.2.200 across configuration files)
-=======
-export let appVer = "2026.2.200" //<APP_VERSION_POINT>
->>>>>>> 4300e63fe5b5eeda95aec53f83edee3a7848b064
+export let appVer = "2026.2.240" //<APP_VERSION_POINT>
 export let webAppSubVer = ''
 
 
