@@ -37,6 +37,8 @@ test.ts
 lbi/*
 .github/agents/*
 .github/instructions/*
+AGENTS.md
+plugins.md
 
 
 vite.config.js.timestamp-*
